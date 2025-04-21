@@ -1,8 +1,8 @@
 package crypto
 
 import (
-	"math/big"
 	"bytes" // Replace crypto/rand with bytes for comparison
+	"math/big"
 
 	"github.com/cloudflare/bn256"
 	"github.com/gtank/merlin"
