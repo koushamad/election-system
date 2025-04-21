@@ -1,7 +1,7 @@
 package crypto
 
 import (
-	"crypto/rand"
+	_ "crypto/rand"
 	"math/big"
 
 	"github.com/cloudflare/bn256"

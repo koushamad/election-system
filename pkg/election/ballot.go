@@ -1,9 +1,9 @@
 package election
 
 import (
-	"election-system/crypto"
 	"github.com/cloudflare/bn256"
 	"github.com/gtank/merlin"
+	"github.com/koushamad/election-system/pkg/crypto"
 )
 
 type Ballot struct {

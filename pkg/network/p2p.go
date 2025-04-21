@@ -5,12 +5,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/koushamad/election-system/pkg/blockchain"
 	"io/ioutil"
 	"net/http"
 	"sync"
 	"time"
-
-	"election-system/pkg/blockchain"
 )
 
 type P2PNetwork struct {

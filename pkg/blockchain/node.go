@@ -4,7 +4,7 @@ package blockchain
 import (
 	"errors"
 	"sync"
-	"time"
+	_ "time"
 )
 
 type Node struct {

@@ -2,11 +2,11 @@ package integration
 
 import (
 	"bytes"
-	"election-system/pkg/blockchain"
-	"election-system/pkg/network"
-	"election-system/test/utils"
 	"encoding/json"
-	"fmt"
+	_ "fmt"
+	"github.com/koushamad/election-system/pkg/blockchain"
+	"github.com/koushamad/election-system/pkg/network"
+	"github.com/koushamad/election-system/test/utils"
 	"net/http"
 	"net/http/httptest"
 	"testing"

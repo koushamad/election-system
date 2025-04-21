@@ -2,8 +2,8 @@
 package smartcontracts
 
 import (
-	"election-system/pkg/blockchain"
-	"election-system/pkg/election"
+	"github.com/koushamad/election-system/pkg/blockchain"
+	"github.com/koushamad/election-system/pkg/election"
 )
 
 type ElectionContract struct {

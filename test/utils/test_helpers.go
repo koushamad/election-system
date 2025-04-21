@@ -1,12 +1,12 @@
 package utils
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"github.com/koushamad/election-system/pkg/blockchain"
 	"github.com/koushamad/election-system/pkg/crypto"
 	"github.com/koushamad/election-system/pkg/election"
-	"math/big"
 	"time"
 
 	"github.com/cloudflare/bn256"

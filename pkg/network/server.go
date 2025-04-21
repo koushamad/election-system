@@ -2,10 +2,9 @@
 package network
 
 import (
-	"election-system/pkg/blockchain"
 	"encoding/json"
 	"fmt"
-	"log"
+	"github.com/koushamad/election-system/pkg/blockchain"
 	"net/http"
 )
 
