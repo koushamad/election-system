@@ -1,0 +1,6 @@
+network:
+  nodes:
+    - address: "localhost:5000"
+    - address: "localhost:5001"
+  consensus: "proof-of-authority"
+  block_time: 10
