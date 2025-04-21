@@ -93,7 +93,7 @@ func CreateTestVote(electionData *election.Election, candidateName string) (*ele
 	return ballot, nil
 }
 
-// CreateElectionTransaction creates a transaction for election creation
+// test/utils/test_helpers.go (partial update)
 func CreateElectionTransaction(electionData *election.Election) (*blockchain.Transaction, error) {
 	electionJSON, err := json.Marshal(electionData)
 	if err != nil {
@@ -101,8 +101,10 @@ func CreateElectionTransaction(electionData *election.Election) (*blockchain.Tra
 	}
 
 	tx := &blockchain.Transaction{
-		Type:    blockchain.TxCreateElection,
-		Payload: electionJSON,
+		ID:        blockchain.GenerateUUID(),
+		Type:      blockchain.TxCreateElection,
+		Payload:   electionJSON,
+		Timestamp: time.Now().Unix(),
 	}
 
 	tx.Hash = tx.CalculateHash()

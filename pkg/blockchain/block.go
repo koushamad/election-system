@@ -49,8 +49,7 @@ func (b *Block) CalculateHash() []byte {
 	// Extract transaction hashes
 	txHashes := make([][32]byte, len(b.Transactions))
 	for i, tx := range b.Transactions {
-		hash := sha256.Sum256(tx.CalculateHash())
-		txHashes[i] = hash
+		copy(txHashes[i][:], tx.Hash)
 	}
 	blockData.Transactions = txHashes
 
