@@ -1,3 +1,4 @@
+// test/integration/blockchain_test.go
 package integration
 
 import (
@@ -5,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/koushamad/election-system/pkg/blockchain"
-	"github.com/koushamad/election-system/pkg/election"
 	"github.com/koushamad/election-system/test/utils"
 	"testing"
 	"time"
@@ -151,19 +151,16 @@ func TestLedgerConsistency(t *testing.T) {
 		for _, tx := range block.Transactions {
 			if tx.Type == blockchain.TxCreateElection {
 				// Verify election transaction
-				var electionData election.Election
+				var electionData map[string]interface{}
 				json.Unmarshal(tx.Payload, &electionData)
-				if electionData.ID == election.ID {
+				if electionData["id"] == election.ID {
 					electionFound = true
 				}
 			} else if tx.Type == blockchain.TxCastVote {
 				// Verify vote transaction
-				var voteData struct {
-					ElectionID string          `json:"election_id"`
-					Ballot     election.Ballot `json:"ballot"`
-				}
+				var voteData map[string]interface{}
 				json.Unmarshal(tx.Payload, &voteData)
-				if voteData.ElectionID == election.ID {
+				if voteData["election_id"] == election.ID {
 					voteCount++
 				}
 			}
@@ -195,7 +192,7 @@ func TestForkResolution(t *testing.T) {
 
 	// Add transactions and create blocks independently
 	node1.TransactionPool = append(node1.TransactionPool, tx1)
-	block1 := node1.CreateBlock()
+	node1.CreateBlock() // Using the result directly instead of assigning to block1
 
 	node2.TransactionPool = append(node2.TransactionPool, tx2)
 	block2 := node2.CreateBlock()
@@ -365,28 +362,25 @@ func TestLedgerDataRetrieval(t *testing.T) {
 	results := make(map[string]int)
 
 	// Find the election first
-	var electionData election.Election
+	var electionData map[string]interface{}
 	for _, block := range node.Chain.Blocks {
 		for _, tx := range block.Transactions {
 			if tx.Type == blockchain.TxCreateElection {
 				err := json.Unmarshal(tx.Payload, &electionData)
-				if err == nil && electionData.ID == election.ID {
+				if err == nil && electionData["id"] == election.ID {
 					// Found the election, now count votes
 					for _, block := range node.Chain.Blocks {
 						for _, tx := range block.Transactions {
 							if tx.Type == blockchain.TxCastVote {
-								var voteData struct {
-									ElectionID string           `json:"election_id"`
-									Ballot     *election.Ballot `json:"ballot"`
-								}
-
+								var voteData map[string]interface{}
 								if err := json.Unmarshal(tx.Payload, &voteData); err == nil {
-									if voteData.ElectionID == election.ID {
+									if voteData["election_id"] == election.ID {
 										// In a real implementation, we would decrypt the vote
 										// For this test, we'll use a mock decryption
-										candidateIndex := mockDecryptVote(voteData.Ballot)
-										if candidateIndex >= 0 && candidateIndex < len(electionData.Candidates) {
-											candidateName := electionData.Candidates[candidateIndex].Name
+										candidateIndex := mockDecryptVote(voteData["ballot"])
+										if candidateIndex >= 0 && candidateIndex < len(electionData["candidates"].([]interface{})) {
+											candidates := electionData["candidates"].([]interface{})
+											candidateName := candidates[candidateIndex].(map[string]interface{})["name"].(string)
 											results[candidateName]++
 										}
 									}
@@ -414,9 +408,11 @@ func TestLedgerDataRetrieval(t *testing.T) {
 
 // Mock function to simulate vote decryption
 // In a real implementation, this would use homomorphic decryption
-func mockDecryptVote(ballot *election.Ballot) int {
+func mockDecryptVote(ballot interface{}) int {
 	// For testing purposes, we'll determine the candidate based on a hash of the ballot data
-	hash := ballot.ZKProof[0] % 3 // Use first byte of proof to determine candidate (0, 1, or 2)
+	ballotMap := ballot.(map[string]interface{})
+	zkProof := ballotMap["zk_proof"].([]byte)
+	hash := zkProof[0] % 3 // Use first byte of proof to determine candidate (0, 1, or 2)
 	return int(hash)
 }
 
