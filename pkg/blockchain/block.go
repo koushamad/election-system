@@ -15,7 +15,6 @@ type Block struct {
 	Hash         []byte         `json:"hash"`
 	Nonce        int            `json:"nonce"`
 	Validator    string         `json:"validator"` // Address of the validator who created this block
-	Signature    []byte         `json:"signature"` // Signature of the validator
 }
 
 func NewBlock(index int, transactions []*Transaction, prevHash []byte, validator string) *Block {
@@ -58,15 +57,4 @@ func (b *Block) CalculateHash() []byte {
 	data, _ := json.Marshal(blockData)
 	hash := sha256.Sum256(data)
 	return hash[:]
-}
-
-func (b *Block) Sign(privateKey []byte) error {
-	// Implementation of block signing using the validator's private key
-	// This would use the crypto package for actual signing
-	return nil
-}
-
-func (b *Block) VerifySignature() bool {
-	// Verify that the block was signed by the claimed validator
-	return true
 }

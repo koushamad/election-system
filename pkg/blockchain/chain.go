@@ -1,8 +1,7 @@
+// pkg/blockchain/chain.go
 package blockchain
 
 import (
-	"crypto/sha256"
-	"encoding/json"
 	"errors"
 	"time"
 )
@@ -20,9 +19,18 @@ func NewChain() *Chain {
 func GenesisBlock() *Block {
 	return &Block{
 		Index:     0,
-		Timestamp: time.Now().String(),
+		Timestamp: time.Now().Unix(), // Changed from String() to Unix() to get int64
 		Hash:      []byte("genesis-hash"),
 	}
+}
+
+// Add the missing AddBlock method
+func (c *Chain) AddBlock(block *Block) {
+	if len(c.Blocks) > 0 {
+		block.PrevHash = c.Blocks[len(c.Blocks)-1].Hash
+	}
+	block.Hash = block.CalculateHash()
+	c.Blocks = append(c.Blocks, block)
 }
 
 func (c *Chain) AddTransaction(tx *Transaction) error {
