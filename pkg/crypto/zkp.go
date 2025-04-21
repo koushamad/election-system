@@ -1,10 +1,11 @@
-// pkg/crypto/zkp.go
 package crypto
 
 import (
+	"math/big"
+	"bytes" // Replace crypto/rand with bytes for comparison
+
 	"github.com/cloudflare/bn256"
 	"github.com/gtank/merlin"
-	"math/big"
 )
 
 func GenerateVoteProof(ciphertext []*bn256.G1, r *big.Int, vote int) []byte {
@@ -12,17 +13,16 @@ func GenerateVoteProof(ciphertext []*bn256.G1, r *big.Int, vote int) []byte {
 	transcript.AppendMessage([]byte("commitment"), ciphertext[0].Marshal())
 	transcript.AppendMessage([]byte("ciphertext"), ciphertext[1].Marshal())
 
+	// Use the challenge in the proof calculation
 	challenge := transcript.ExtractBytes([]byte("challenge"), 32)
 
-	// Use the challenge in the proof calculation
 	// This is a simplified proof for demonstration
 	// In a real implementation, this would be more complex
-	proof := new(bn256.G1).ScalarBaseMult(new(big.Int).SetBytes(challenge))
+	proof := new(bn256.G1).ScalarBaseMult(r)
 	return proof.Marshal()
 }
 
-func VerifyVoteProof(ciphertext []*bn256.G1, proof []byte) bool {
-	transcript := merlin.NewTranscript("vote_proof")
+func VerifyZKProof(transcript *merlin.Transcript, ciphertext []*bn256.G1, proof []byte) bool {
 	transcript.AppendMessage([]byte("commitment"), ciphertext[0].Marshal())
 	transcript.AppendMessage([]byte("ciphertext"), ciphertext[1].Marshal())
 
@@ -35,5 +35,6 @@ func VerifyVoteProof(ciphertext []*bn256.G1, proof []byte) bool {
 		return false
 	}
 
-	return expected.String() == string(actual)
+	// Replace String() with a proper comparison
+	return bytes.Equal(expected.Marshal(), actual.Marshal())
 }

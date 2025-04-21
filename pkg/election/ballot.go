@@ -1,3 +1,4 @@
+// pkg/election/ballot.go
 package election
 
 import (
