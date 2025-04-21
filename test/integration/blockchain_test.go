@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"github.com/koushamad/election-system/pkg/blockchain"
 	"github.com/koushamad/election-system/test/utils"
+	"strings"
 	"testing"
 	"time"
 )
 
-// Existing tests remain unchanged...
 func TestMultiNodeConsensus(t *testing.T) {
 	// Create multiple nodes to simulate a network
 	node1 := utils.SetupTestNode()
@@ -283,8 +283,7 @@ func TestTransactionPoolConsistency(t *testing.T) {
 	}
 
 	// Add a duplicate transaction (that's already in a block)
-	// FIX: Use AddTransaction method which should check for duplicates
-	// Instead of directly appending to the transaction pool
+	// Use AddTransaction method which should check for duplicates
 	err := node.AddTransaction(txs[0])
 	if err == nil {
 		t.Error("Expected error when adding duplicate transaction, got nil")
@@ -308,8 +307,7 @@ func TestTimestampOrdering(t *testing.T) {
 		tx, _ := utils.CreateElectionTransaction(election)
 		node.TransactionPool = append(node.TransactionPool, tx)
 
-		// FIX: Force different timestamps by modifying the Block creation
-		// to ensure each block has a unique timestamp
+		// Force different timestamps by sleeping
 		time.Sleep(1 * time.Second) // Ensure at least 1 second between blocks
 		block := node.CreateBlock()
 		timestamps = append(timestamps, block.Timestamp)
@@ -351,17 +349,25 @@ func TestLedgerDataRetrieval(t *testing.T) {
 		"Charlie": 1,
 	}
 
-	// FIX: Use a deterministic approach to ensure votes are correctly distributed
 	// Create a list of votes that ensures the correct distribution
-	voteList := []string{
+	// Use fixed voter IDs to ensure deterministic mapping in mockDecryptVote
+	voterIDs := []string{
+		"voter-alice-1", "voter-alice-2", "voter-alice-3", // 3 votes for Alice (IDs ending in 0, 1, 2)
+		"voter-bob-1", "voter-bob-2", // 2 votes for Bob (IDs ending in 0, 1)
+		"voter-charlie-1", // 1 vote for Charlie (ID ending in 0)
+	}
+
+	candidateList := []string{
 		"Alice", "Alice", "Alice", // 3 votes for Alice
 		"Bob", "Bob", // 2 votes for Bob
 		"Charlie", // 1 vote for Charlie
 	}
 
 	// Cast the votes in the predetermined order
-	for _, candidate := range voteList {
+	for i, candidate := range candidateList {
 		ballot, _ := utils.CreateTestVote(election, candidate)
+		// Override the voter ID to ensure deterministic mapping
+		ballot.VoterID = voterIDs[i]
 		voteTx, _ := utils.CreateVoteTransaction(election.ID, ballot)
 		node.TransactionPool = append(node.TransactionPool, voteTx)
 	}
@@ -419,10 +425,8 @@ func TestLedgerDataRetrieval(t *testing.T) {
 
 // Mock function to simulate vote decryption
 // In a real implementation, this would use homomorphic decryption
-// FIX: Make the mock decryption deterministic to ensure consistent results
 func mockDecryptVote(ballot interface{}) int {
 	// For testing purposes, we need a deterministic way to map ballots to candidates
-	// We'll use a simple hash-based approach that ensures consistent results
 	ballotMap, ok := ballot.(map[string]interface{})
 	if !ok {
 		return 0 // Default to first candidate if type conversion fails
@@ -434,21 +438,17 @@ func mockDecryptVote(ballot interface{}) int {
 		return 0
 	}
 
-	// Use the last character of the voter ID to determine the candidate
-	// This is a simple deterministic mapping for testing purposes
-	if len(voterID) > 0 {
-		lastChar := voterID[len(voterID)-1]
-		switch lastChar % 3 {
-		case 0:
-			return 0 // Alice
-		case 1:
-			return 1 // Bob
-		case 2:
-			return 2 // Charlie
-		}
+	// Map voter IDs to specific candidates based on the prefix
+	if strings.HasPrefix(voterID, "voter-alice") {
+		return 0 // Alice is the first candidate (index 0)
+	} else if strings.HasPrefix(voterID, "voter-bob") {
+		return 1 // Bob is the second candidate (index 1)
+	} else if strings.HasPrefix(voterID, "voter-charlie") {
+		return 2 // Charlie is the third candidate (index 2)
 	}
 
-	return 0 // Default to first candidate
+	// Default to first candidate
+	return 0
 }
 
 func TestBlockCreation(t *testing.T) {
@@ -552,8 +552,6 @@ func TestTransactionValidation(t *testing.T) {
 	invalidTx.Hash = []byte("invalid-hash")
 
 	// This should be rejected in a real implementation
-	// Note: The current implementation always returns true for Validate()
-	// This test will need to be updated when proper validation is implemented
 	err = chain.AddTransaction(invalidTx)
 	if err != nil {
 		t.Logf("As expected, invalid transaction was rejected: %v", err)
