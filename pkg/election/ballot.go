@@ -8,9 +8,9 @@ import (
 )
 
 type Ballot struct {
-	Ciphertext []*bn256.G1
-	ZKProof    []byte
-	VoterID    string
+	Ciphertext []*bn256.G1 `json:"ciphertext"`
+	ZKProof    []byte      `json:"zk_proof"`
+	VoterID    string      `json:"voter_id"`
 }
 
 func NewBallot(ciphertext []*bn256.G1, proof []byte, voterID string) *Ballot {
