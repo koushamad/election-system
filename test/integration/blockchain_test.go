@@ -192,7 +192,7 @@ func TestForkResolution(t *testing.T) {
 
 	// Add transactions and create blocks independently
 	node1.TransactionPool = append(node1.TransactionPool, tx1)
-	node1Block := node1.CreateBlock()
+	node1.CreateBlock()
 
 	node2.TransactionPool = append(node2.TransactionPool, tx2)
 	block2 := node2.CreateBlock()
